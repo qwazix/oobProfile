@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ "$(pidof oobProfileDaemon)" ]
+then
+/sbin/initctl restart apps/oobProfileDaemon
+else
+/sbin/initctl start apps/oobProfileDaemon
+fi

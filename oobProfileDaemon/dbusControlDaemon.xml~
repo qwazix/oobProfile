@@ -1,0 +1,9 @@
+<node>
+  <interface name="gr.oob.startOobProfileDaemon">
+    <method name="start"/>
+    <method name="stop"/>	
+    <method name="setgpsmode">	
+       <arg direction="in" type="s"/>
+    </method>
+  </interface>
+</node>

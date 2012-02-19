@@ -1,0 +1,5 @@
+#!/bin/sh
+if [ "$(pidof oobProfileDaemon)" ]
+then
+/sbin/initctl stop apps/oobProfileDaemon
+fi
