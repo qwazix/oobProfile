@@ -6,7 +6,7 @@ Map {
     id: map
     plugin : Plugin {name : "nokia"}
     size.width: parent.width
-    size.height: 330
+    size.height: 250
     zoomLevel: 20
     center: positionSource.position.coordinate
     //radius = JS.getSetting('radius')

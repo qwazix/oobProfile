@@ -1,22 +1,24 @@
 import QtQuick 1.1
-import com.nokia.meego 1.0
-import QtQuick 1.0
+import com.nokia.symbian 1.1
+import com.nokia.extras 1.1
 import QtMobility.location 1.2
 import "parser.js" as JS
 //QDeclarativeExampleDB
+
 Page {
     width:parent.width;
-    id:page
+    id:symbianMainPage
 
     function initialize() {
-        console.log("Check iNTERNET: "+pm.checkInternet())
-        if (pm.checkInternet()){
-            var component = Qt.createComponent("map.qml");
-            if (component.status == Component.Ready) {
-                var map = component.createObject(column1);
-            }
-        }
-        var profiles = eval(pm.getAllProfiles());
+
+        //        console.log("Check iNTERNET: "+pm.checkInternet())
+        //        if (pm.checkInternet()){
+        //            var component = Qt.createComponent("map.qml");
+        //            if (component.status == Component.Ready) {
+        //                var map = component.createObject(column1);
+        //            }
+        //        }
+     var profiles = eval(pm.getAllProfiles());
         var db = openDatabaseSync("oobProfileDatabase", "1.0", "", 1000000);
 
         db.transaction(
@@ -31,15 +33,14 @@ Page {
                     tx.executeSql('INSERT INTO settings VALUES(?, ?)', [ 'previousProfile', 'silent' ]);
                     tx.executeSql('INSERT INTO settings VALUES(?, ?)', [ 'radius', '200' ]);//in meters
                     tx.executeSql('INSERT INTO settings VALUES(?, ?)', [ 'time', '1' ]);//in minutes
-                    tx.executeSql('INSERT INTO settings VALUES(?, ?)', [ 'active', '1' ]);
-                    tx.executeSql('INSERT INTO settings VALUES(?, ?)', [ 'usegps', '1' ]);
                 }
             }
         )
         console.log("JS.getHereProfile: "+JS.getHereProfile());
 
-       // checkWhatToDo();
+        checkWhatToDo();
     }//end initialize
+
 
     function buttonPressed(profile){
         console.log(profile)
@@ -48,7 +49,7 @@ Page {
         var db = openDatabaseSync("oobProfileDatabase", "1.0", "", 1000000);
         var HereProfile=JS.getHereRecord(latitude,longitude);
         console.log("hererecord: "+HereProfile)
-        if(HereProfile===0){
+        if(HereProfile===-1){
             db.transaction(
                 function(tx) {
                     console.log('before insert: '+ latitude + longitude + profile)
@@ -76,7 +77,7 @@ Page {
         console.log("To PREVIOUS twra einai: "+JS.getSetting('previousProfile'));
 
         hereProfile=JS.getHereProfile(latitude,longitude);
-        if(hereProfile==0){
+        if(hereProfile==-1){
             pm.setProfile(JS.getSetting('previousProfile'));
         }else{
             pm.setProfile(hereProfile);
@@ -84,43 +85,53 @@ Page {
 
     }//telos checkWhatToDo
 
-    function selected(){
-        //console.log(singleSelectionDialog.model.get(singleSelectionDialog.selectedIndex).name)
-        JS.updateSetting('previousProfile',singleSelectionDialog.model.get(singleSelectionDialog.selectedIndex).name);
-    }//telos selected
-
     PositionSource {
         id: positionSource
-        updateInterval: 1000//JS.getSetting('time');
+        updateInterval: parseInt(JS.getSetting('time'));
         active: true
         onPositionChanged:{
         //    checkWhatToDo();
-            column1.children[5].children[0].radius = JS.getSetting('radius')
+            //kyklos tou xarti
+            //column1.children[5].children[0].radius = JS.getSetting('radius')
             var profiles = eval(pm.getAllProfiles());
-            console.log('onPositionChanged:'+JS.getHereProfile(positionSource.position.coordinate.latitude,positionSource.position.coordinate.longitude))
-            var profileIndex = profiles.indexOf(JS.getHereProfile(positionSource.position.coordinate.latitude,positionSource.position.coordinate.longitude))
+            //console.log('onPositionChanged:'+parseInt(JS.getHereProfile(positionSource_s.position.coordinate.latitude,positionSource_s.position.coordinate.longitude)))
+            var profileIndex = parseInt(JS.getHereProfile(positionSource.position.coordinate.latitude,positionSource.position.coordinate.longitude))
+            console.log("profileHere: "+profileIndex)
+            for (var i=0; i<buttonColumn.children.length-1; i++) {
+                if (profileIndex!=i)
+                buttonColumn.children[i].checked = false;
+            }
             if (profileIndex !=-1){
-                buttonColumn.exclusive = true;
-                buttonColumn.checkedButton = buttonColumn.children[profileIndex];
+                buttonColumn.children[profileIndex].checked=true;
+
             }
         }
     }
 
+    ScrollDecorator {
+        flickableItem: container
+    }
+    Flickable {
+        id: container
+
+        x: 0 // we need to set the width and height
+        y: 0
+        z: 1
+        width: symbianMainPage.width
+        height: symbianMainPage.height-commonToolBar.height
+        contentWidth: symbianMainPage.width
+        contentHeight: symbianMainPage.height
+
+        flickableDirection: Flickable.VerticalFlick
+        pressDelay: 100
     // Create a selection dialog with a title and list elements to choose from.
     SelectionDialog {
         id: singleSelectionDialog
+        height: 300
         titleText: "Select Default Profile"
-        selectedIndex: {
-            var profiles = eval(pm.getAllProfiles());
-            console.log(profiles);
-            console.log(JS.getSetting("previousProfile"))
-            console.log("indexof: "+ profiles.indexOf(JS.getSetting("previousProfile")))
-            return profiles.indexOf(JS.getSetting("previousProfile")) + 1
-        }
-        model: ListModel{
-            id:listModel
-        }
-        onAccepted: {selected();}
+        selectedIndex: parseInt(JS.getSetting("previousProfile"))
+        model: eval(pm.getAllProfiles());
+        onAccepted: {JS.updateSetting("previousProfile",selectedIndex)}
     }//telos SelectionDialog
 
 
@@ -129,55 +140,72 @@ Page {
         width: parent.width
         anchors.fill: parent
         anchors.margins: 30
-        spacing: 10
+        spacing: 5
            Text {
-                text: "Select profile for this area."
-                font.pointSize: 23
-                color: "black"
+               text: "Select profile for this area."
+               font.pointSize: 8
+               color: "white"
+
             }
            Text {
-                text: "It will be activated every time you are around here"
-                font.pointSize: 14
-                color: "black"
+                text: "It will be activated every time you are here"
+                font.pointSize: 6
+                color: "white"
             }
-           ButtonColumn {
+
+           Column {
                 id: buttonColumn
                 width:parent.width/2;
-                exclusive: false
+                //exclusive: false
+
                     Repeater {
                         model: eval(pm.getAllProfiles());
-                        Button {
+                        RadioButton {
                             text: modelData
                             onClicked:{
-                                var a = eval(pm.getAllProfiles());
-                                buttonColumn.exclusive = true
-                                //set checked again to ourselves because the previous command checks the first item
-                                buttonColumn.checkedButton = buttonColumn.children[a.indexOf(modelData)]
-                                buttonPressed(modelData)
+                                if (!checked) {checked = true; return}
+                                for (var i=0; i<buttonColumn.children.length-1; i++) {
+                                    if (index!=i)
+                                    buttonColumn.children[i].checked = false;
+                                }
+
+                                console.log("aeeeeeeeeeeeeeee"+modelData);
+                                buttonPressed(index);
                             }
 
                         }
 
+
                      }
+
             }//telos BttonColumn
             Button {
                 text: "Remove this area"
-                width:parent.width/1.5;
+                width:240;
                 id:rm
                 onClicked:{
                     JS.removeThisArea(positionSource.position.coordinate.latitude,positionSource.position.coordinate.longitude);
-                    buttonColumn.exclusive = false
-                    buttonColumn.checkedButton.checked = false
+                    for (var i=0; i<buttonColumn.children.length-1; i++) {
+                        buttonColumn.children[i].checked = false;
+                    }
+
                 }
             }
 
             Button {
-                width:parent.width/1.5;
+                width:240;
                 id:defaultpr
                 text: "Default Profile"
                 onClicked:{
                    singleSelectionDialog.open();
-                     JS.loaded(eval(pm.getAllProfiles()));
+                }
+            }
+            Button {
+                width:240;
+                id:aaa
+                text: "aaaaaaaaaaaa"
+                onClicked:{
+                    pm.setProfile('a');
                 }
             }
 //            Map {
@@ -213,8 +241,10 @@ Page {
 //                    text:"lon :"+positionSource.position.coordinate.longitude
 //                }
     }
+    }
 
              Component.onCompleted:{
+
                  initialize();
              }
 

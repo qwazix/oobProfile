@@ -20,11 +20,14 @@ public slots:
     bool setProfile(QString profileName);
     QString getProfile();
     QString getAllProfiles();
+    void sendToBackground();
+#if defined(Q_WS_HARMATTAN)
     void startDaemon();
     void stopDaemon();
     void setInterval(QString time);
     void setRadius(QString radius);
     void setGps(QString gpsonoff);
+#endif
     bool checkInternet();
 private:
 

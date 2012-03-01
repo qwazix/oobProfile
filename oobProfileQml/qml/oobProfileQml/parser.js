@@ -58,3 +58,65 @@ function updateSetting(key, value){
          tx.executeSql("UPDATE settings SET value=? WHERE key=?",[value,key]);
     })
 }
+
+function getHereProfile(latitude,longitude) {
+    return getHereSomething(latitude, longitude, "profile")
+}//telos getHereProfile
+
+function getHereRecord(latitude,longitude){
+    return getHereSomething(latitude, longitude, "record")
+}
+
+function getHereSomething(latitude, longitude, what){
+    var db = openDatabaseSync("oobProfileDatabase", "1.0", "", 1000000);
+    var HerePro=-1;
+    db.transaction(
+        function(tx) {
+
+            var rs=tx.executeSql("SELECT * FROM records");
+                    console.log("rs:"+rs.rows.length)
+            var r = ""
+            var distance;
+            var radius=parseFloat(JS.getSetting('radius'));
+
+            for(var i = 0; i < rs.rows.length; i++) {
+                distance=JS.cut(latitude,longitude,rs.rows.item(i).latitude,rs.rows.item(i).longitude);
+                console.log("distance: "+distance)
+                console.log("radius: "+radius)
+                if(distance<radius){
+                    console.log("We got a match!: "+ rs.rows.item(i).profile);
+                    if (what=="profile") HerePro = rs.rows.item(i).profile; else HerePro = i+1;
+                    i=rs.rows.length+2;
+                }
+            }//end loop
+
+        }
+    )
+    return HerePro;
+}
+
+
+function removeThisArea(latitude,longitude){
+    var db = openDatabaseSync("oobProfileDatabase", "1.0", "", 1000000);
+    var radius=JS.getSetting('radius');
+    db.transaction(
+        function(tx) {
+
+            var rs=tx.executeSql("SELECT * FROM records");
+            var r = ""
+            var distance
+            var radius=JS.getSetting('radius');
+            for(var i = 0; i < rs.rows.length; i++) {
+                distance=JS.cut(latitude,longitude,rs.rows.item(i).latitude,rs.rows.item(i).longitude);
+                if(distance<radius){
+
+                    tx.executeSql("DELETE FROM records WHERE latitude=? AND longitude=?",
+                                  [latitude, longitude]);
+                               console.log("The profile deleted here");
+                }
+            }//telos loops
+            pm.setProfile(JS.getSetting('previousProfile'));
+
+        }
+       )
+}//telos removeThisArea
