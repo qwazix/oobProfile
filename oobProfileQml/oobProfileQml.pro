@@ -24,6 +24,9 @@ symbian: TARGET.UID3 = 0xEA524E4F
 #symbian:TARGET.CAPABILITY += NetworkServices
 symbian:TARGET.CAPABILITY = ReadDeviceData
 symbian:LIBS += -lprofileengine \
+    -lcone \
+    -lapgrfx \
+    -lws32
 #   -letel3rdparty \
 #   -lfeatdiscovery
 
@@ -64,7 +67,6 @@ HEADERS += \
     MOBILITY += systeminfo
 
 QT += sql
-
-#INCLUDEPATH +=/opt/QtSDK/Symbian/SDKs/S60_5th_Edition_SDK_v1.0/epoc32/include
+symbian {
 INCLUDEPATH +=\S60\devices\S60_5th_Edition_SDK_v1.0\epoc32\include
-
+}

@@ -3,12 +3,15 @@
 #include "qmlapplicationviewer.h"
 #include <QApplication>
 #include <QtDeclarative>
+#if defined(Q_WS_HARMATTAN)
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
+#endif
 #include "profilemanager.h"
 #include "SystemDeviceInfo.h"
-#include <QDeclarativeEngine>
+
+
 
 
 
@@ -31,10 +34,10 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     profilemanager pm;
     SystemDeviceInfo spm;
     QDeclarativeView view;
-    QDeclarativeEngine engine;
     QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("pm",&pm );
     ctxt->setContextProperty("spm",&spm );
+
 
 
 
@@ -63,7 +66,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
 #endif
 #if (defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR))
-    view.setSource(QUrl("qml/oobProfileQml/SymbianMain.qml"));
+    view.setSource(QUrl("qml/oobProfileQml/testSymbian.qml"));
     view.showFullScreen();
 #endif
 

@@ -202,12 +202,13 @@ Page {
             }
             Button {
                 width:240;
-                id:aaa
-                text: "aaaaaaaaaaaa"
+                id:setPro
+                text: "Change Profile to 1"
                 onClicked:{
-                    pm.setProfile('a');
+                    spm.setSProfile("a");
                 }
             }
+
 //            Map {
 //                id: map
 //                plugin : Plugin {name : "nokia"}

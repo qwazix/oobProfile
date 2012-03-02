@@ -1,11 +1,9 @@
 #include "profilemanager.h"
 #include <QDebug>
+#if defined(Q_WS_HARMATTAN)
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
-#include <QNetworkConfigurationManager>
-#include "SystemDeviceInfo.h"
-#include <QProcess>
 //harmattan profile code provided by http://meegoharmattandev.blogspot.com/2011/07/changing-and-accessing-profiles.html
 #define PROFILED_SERVICE "com.nokia.profiled"
 #define PROFILED_PATH "/com/nokia/profiled"
@@ -17,8 +15,20 @@
 #define PROFILED_PROFILE_CHANGED "profile_changed"
 //// The key for accessing Harmattan's profile type under profile
 #define PROFILED_TYPE_VALUE "ringing.alert.type"
- #include <QStringList>
-//#include <apgtask.h>
+#endif
+#include <QNetworkConfigurationManager>
+#include "SystemDeviceInfo.h"
+#include <QStringList>
+#if defined(Q_OS_SYMBIAN)
+#include <apgtask.h>
+#include <apgtask.h>
+#include <apgcli.h>
+#include <eikenv.h>
+#include <eikdef.h>
+#include <coemain.h>
+#include <w32std.h>
+#endif
+
 
 profilemanager::profilemanager(QObject *parent) : QObject(parent)
 {
@@ -48,6 +58,9 @@ bool profilemanager::setProfile(QString profileName)
     profiledConnectionInterface.call("set_profile", profileName);
     qDebug() << "To profile allakse se "+ profileName << endl;
     return true;
+#endif
+#if defined(Q_OS_SYMBIAN)
+
 #endif
     return true;
 }
@@ -134,8 +147,9 @@ void profilemanager::setGps(QString gpsonoff)
 }
 #endif
 void profilemanager::sendToBackground(){
-
-//    TApaTask task(iEikonEnv->WsSession());
-//    task.SetWgId( CEikonEnv::Static()->RootWin().Identifier());
-//    task.SendToBackground();
+#if defined(Q_OS_SYMBIAN)
+    TApaTask task(CEikonEnv::Static()->WsSession());
+    task.SetWgId( CEikonEnv::Static()->RootWin().Identifier());
+    task.SendToBackground();
+#endif
 }

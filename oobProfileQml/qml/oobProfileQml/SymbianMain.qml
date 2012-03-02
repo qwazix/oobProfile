@@ -5,8 +5,7 @@ import com.nokia.extras 1.1
 
 Window{
     PageStack {
-        id: pageStack
-        signal minimize();
+        id:pageStack
         initialPage: symbianMainPage
 
         SymbianMainPage {
@@ -22,8 +21,13 @@ Window{
             ToolButton {
                 id:back
                 iconSource: "toolbar-back"
-                visible: pageStack.currentPage.toString().indexOf("SymbianMainPage") === -1;
-                onClicked: pageStack.pop()
+                visible: true;//pageStack.currentPage.toString().indexOf("SymbianMainPage") === -1;
+                onClicked: {
+                    if(!pageStack.currentPage.toString().indexOf("SymbianMainPage") === -1)
+                        pm.sendToBackground();
+                    else
+                        pageStack.pop();
+                }
 
             }
             ToolButton{
@@ -71,7 +75,7 @@ Window{
             MenuItem { text: qsTr("Delete All Records")
                 onClicked: removeAll();
             }
-            MenuItem { text: qsTr("Minimize")
+            MenuItem { text: qsTr("Hide")
                 onClicked: pm.sendToBackground();
             }
             MenuItem { text: qsTr("Exit")
